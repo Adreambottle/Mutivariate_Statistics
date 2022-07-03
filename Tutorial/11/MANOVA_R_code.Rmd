@@ -1,0 +1,146 @@
+---
+title: MANOVA
+output: html_notebook
+author: Daniel Yanan ZHOU
+---
+## What is MANOVA test?
+
+In the situation where there multiple response variables you can test them simultaneously using a multivariate analysis of variance (MANOVA). 
+
+For example, we may conduct an experiment where we give two treatments (A and B) to two groups and our hypothesis is that both together are affected by the difference in treatment. A multivariate analysis of variance could be used to test this hypothesis.
+
+## Assumptions of MANOVA
+### MANOVA can be used in certain conditions:
+
+* The dependent variables should be normally distribute within groups. The R function `mshapiro.test()` [in the mvnormtest package] can be used to perform the Shapiro-Wilk test for multivariate normality. This is useful in the case of MANOVA, which assumes multivariate normality.
+
+* Homogeneity of variances across the range of predictors.
+
+* Linearity between all pairs of dependent variables, all pairs of covariates, and all dependent variable-covariate pairs in each cell
+
+### Interpretation of MANOVA
+If the global multivariate test is significant, we conclude that the corresponding effect (treatment) is significant. In that case, the next question is to determine if the treatment affects only the weight, only the height or both. In other words, we want to identify the specific dependent variables that contributed to the significant global effect.
+
+To answer this question, we can use one-way ANOVA (or univariate ANOVA) to examine separately each dependent variable.
+
+## Procedure of MANOVA
+
+### 1. Prepare the Data
+```{r}
+getwd()
+
+setwd("/Users/meron/Desktop/MTB/Tutorial/11")
+
+dat <- read.csv("triathlon.csv")
+
+attach(dat)
+```
+
+
+```{r}
+head(dat)
+```
+```{r}
+summary(dat)
+```
+
+```{r}
+gender <- as.factor(dat[,1])
+cat <- as.factor(dat[,2])
+times <- as.matrix(dat[,3:5])
+```
+
+# 2. Testing the Assumptions of MANOVA
+```{r}
+SWIMresCAT=lm(dat$SWIM~CATEGORY)$residuals
+
+BIKEresCAT=lm(dat$BIKE~CATEGORY)$residuals
+
+RUNresCAT=lm(dat$RUN~CATEGORY)$residuals
+
+SWIMresGEN=lm(dat$SWIM~GENDER)$residuals
+
+BIKEresGEN=lm(dat$BIKE~GENDER)$residuals
+
+RUNresGEN=lm(dat$RUN~GENDER)$residuals
+```
+To test normality statistically, we can use a Shapiro Test on each response for each level of each treatment:
+
+The null-hypothesis of this test is that the population is normally distributed. Thus, if the p value is less than the chosen alpha level, then the null hypothesis is rejected and there is evidence that the data tested are not normally distributed. On the other hand, if the p value is greater than the chosen alpha level, then the null hypothesis (that the data came from a normally distributed population) can not be rejected (e.g., for an alpha level of .05, a data set with a p value of less than .05 rejects the null hypothesis that the data are from a normally distributed population).
+
+```{r}
+shapiro.test(SWIMresCAT)
+
+shapiro.test(BIKEresCAT)
+
+shapiro.test(RUNresCAT)
+
+shapiro.test(SWIMresGEN)
+
+shapiro.test(BIKEresGEN)
+
+shapiro.test(RUNresGEN)
+```
+
+```{r}
+boxplot(lm(dat$SWIM~cat)$residuals~cat) # For CATEGORY 
+boxplot(lm(dat$SWIM~cat)$residuals~cat) # For GENDER
+```
+In statistics, Bartlett's test, is used to test homoscedasticity. In statistics, a sequence of random variables is homoscedastic if all its random variables have the same finite variance. That is, if multiple samples are from populations with equal variances. Some statistical tests, such as the analysis of variance, assume that variances are equal across groups or samples, which can be verified with Bartlett's test.
+
+In Bartlett test, we construct the null and alternative hypothesis. For this purpose several test procedures have been devised. The test procedure due to M.S.E (Mean Square Error/Estimator) Bartlett test is represented here. This test procedure is based on the statistic whose sampling distribution is approximately a Chi-Square distribution with (k-1) degrees of freedom, where k is the number of random samples.
+
+Bartlett's test is used to test the null hypothesis, H0 that all k population variances are equal against the alternative that at least two are different.
+
+Bartlett's test is sensitive to departures from normality. That is, if the samples come from non-normal distributions, then Bartlett's test may simply be testing for non-normality. 
+
+```{r}
+bartlett.test(SWIMresCAT~cat)
+
+bartlett.test(BIKEresCAT~cat)
+
+bartlett.test(RUNresCAT~cat)
+
+bartlett.test(SWIMresGEN~gender)
+
+bartlett.test(BIKEresGEN~gender)
+
+bartlett.test(RUNresGEN~gender)
+```
+
+```{r}
+plot(lm(dat$SWIM~dat$CATEGORY*dat$GENDER))
+
+plot(lm(dat$BIKE~dat$CATEGORY*dat$GENDER))
+
+plot(lm(dat$RUN~dat$CATEGORY*dat$GENDER))
+```
+
+# Run the MANOVA
+```{r}
+output <- manova(times~gender*cat)
+
+summary.aov(output)
+```
+Pillai’s trace is a test statistic produced by a MANOVA. It is a value that ranges from 0 to 1.
+
+The closer Pillai’s trace is to 1, the stronger the evidence that the explanatory variable has a statistically significant effect on the values of the response variables.
+
+Pillai’s trace, often denoted V, is calculated as:
+
+$V = trace(H(H+E)^{-1})$
+
+where:
+
+H: The hypothesis sum of squares and cross products matrix
+E: The error sum of squares and cross products matrix
+When performing a MANOVA, most statistical software will use Pillai’s trace to calculate a rough approximation to an F-statistic along with a corresponding p-value.
+
+If this p-value is less than some significance level (i.e. α = .05) then we reject the null hypothesis of the MANOVA and conclude that the explanatory variable has a significant effect on the values of the response variables.
+```{r}
+summary(output, test="Wilks")
+
+summary(output, test="Pillai")
+
+summary(output, test="Hotelling")
+```

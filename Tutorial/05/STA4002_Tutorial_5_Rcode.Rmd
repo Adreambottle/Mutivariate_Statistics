@@ -1,0 +1,116 @@
+---
+title: "CCA Code"
+output: html_notebook
+---
+
+
+```
+  "
+  The data in Table 3.1 give the head lengths and head breadths (in millimetres) 
+  for each of the ﬁrst two adult sons in 25 families. Here we shall use only the 
+  head lengths; the head breadths will be used later in the chapter.
+  "
+```
+
+# Read the data
+```{r}
+headsize = read.csv("/Users/meron/Desktop/Table1.csv")
+headsize = headsize[, 2:5]
+headsize
+```
+
+# Perform the CCA
+```{r}
+get_sd = function(X){
+  # get the standard variable
+  X.std =  sd(X)
+  return(X / X.std)
+}
+
+headsize.std = apply(headsize, 2, get_sd)
+headsize.std
+xlim = c(floor(min(headsize.std[, c(1, 3)])), ceiling(max(headsize.std[, c(1, 3)])))
+ylim = c(floor(min(headsize.std[, c(2, 4)])), ceiling(max(headsize.std[, c(2, 4)])))
+
+plot(headsize.std[, 1], headsize.std[, 2], col='red', 
+     xlim=xlim, ylim=ylim, xlab="head", ylab="breath")
+points(headsize.std[, 3], headsize.std[, 4], col='blue')
+```
+
+
+# Get the seperate correlation matrix
+```{r}
+R = cor(headsize.std) 
+r11 = R[1:2, 1:2] 
+r22 = R[-(1:2), -(1:2)] 
+r12 = R[1:2, -(1:2)] 
+r21 = R[-(1:2), 1:2] 
+
+R
+```
+
+# Get the value of the CCA components
+```{r}
+(E1 = solve(r11) %*% r12 %*% solve(r22) %*%r21)
+(E2 = solve(r22) %*% r21 %*% solve(r11) %*%r12)
+```
+
+# Calculate the eigenvalue and eigenvector
+```{r}
+(e1 = eigen(E1))
+(e2 = eigen(E2))
+```
+
+# Round the eigen vector
+```{r}
+round(e1$vectors, 2)
+round(e2$vectors, 2)
+```
+
+
+# Build the new components
+```
+  "
+  Here the four linear functions are found to be
+  u1 = +0.73 x1 + 0.69 x2 , 
+  u2 = −0.70 x1 + 0.71 x2 , 
+  v1 = −0.68 x3 − 0.73 x4 , 
+  v2 = −0.71 x3 + 0.71 x4 .
+  "
+```
+
+```{r}
+girth1 = headsize.std[,1:2] %*% e1$vectors[,1] 
+girth2 = headsize.std[,3:4] %*% e2$vectors[,1]
+
+shape1 = headsize.std[,1:2] %*% e1$vectors[,2] 
+shape2 = headsize.std[,3:4] %*% e2$vectors[,2] 
+```
+
+# Get the correlation new components
+```{r}
+g = cor(girth1, girth2)
+s = cor(shape1, shape2)
+
+g
+s
+```
+```
+  "
+  These two variates have a correlation of −0.79.
+  "
+
+```{r}
+plot(girth1, girth2) 
+plot(shape1, shape2)
+```
+
+
+
+
+
+
+
+
+
+

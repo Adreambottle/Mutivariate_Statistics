@@ -1,0 +1,62 @@
+---
+title: "Factor Analysis"
+author: ZHOU Yanan
+---
+
+```{r}
+data_path = "/Users/meron/Desktop/MTB/Tutorial/09/data.csv"
+data = read.csv(data_path)
+row.names(data) = data$X
+life = data[-1]
+
+life
+```
+
+To begin, we will use the formal test for the number of factors incorporated into the maximum likelihood approach. We can apply this test to the data, assumed to be contained in the data frame life with the country names labelling the rows and variable names as given, using the following
+```{r}
+sapply(1:3, function(f) factanal(life, factors = f, method ="mle")$PVAL)
+```
+
+These results suggest that a three-factor solution might be adequate to account for the observed covariances in the data, although it has to be remembered that, with only 31 countries, use of an asymptotic test result may be rather suspect. The three-factor solution is as follows.
+
+```{r}
+factanal(life, factors = 3, rotation = "varimax")
+```
+
+Changing the method of rotation by promax
+```{r}
+factanal(life, factors = 3, rotation = "promax")
+```
+
+### View the results
+View the results of factor analysis
+
+#### Fit data
+```{r}
+result = factanal(life, factors = 3, method ="mle")
+```
+
+#### Loadings
+```{r}
+result$loadings
+```
+
+#### Correlation
+```{r}
+result$correlation
+```
+
+#### Factors
+```{r}
+result$factors
+```
+
+#### RotationMatrix
+```{r}
+result$rotmat
+```
+
+### p-values
+```{r}
+result$PVAL
+```
