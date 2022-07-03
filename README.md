@@ -20,12 +20,12 @@
 
 #### 2.2. Skills Generic:
 
-- Students will be able to estimate mean vector, covariance matrix, and     correlation coefficients of sample data.
+- Students will be able to estimate mean vector, covariance matrix, and correlation coefficients of sample data.
 - Students will be able to conduct basic hypothesis testing.
-- Students will be able to translate problems raised in real life and     business environment into multivariate framework, and conduct analysis.
+- Students will be able to translate problems raised in real life and business environment into multivariate framework, and conduct analysis.
 
 #### 2.3. Valued/Attitude:
 
-- Students will be equipped with some multivariate techniques, and be able to     analyze problems in real life and business environment.
+- Students will be equipped with some multivariate techniques, and be able to analyze problems in real life and business environment.
 - Students will have more interests in carrying out scientific investigations.
 - Students will appreciate the importance of multivariate techniques in real life.
